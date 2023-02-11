@@ -24,33 +24,36 @@ class Kernel
     }
 
     /** @param mixed $args */
-    public function dispatch(string $command, ...$args): string
+    public function dispatch(string $command, ...$args): void
     {
         if (!isset($this->handlers[$command])) {
-            return 'Command not found.';
+            echo "Command not found.\n";
+            return;
         }
 
         $handler = $this->handlers[$command];
 
         if (is_callable($handler)) {
-            return $handler(...$args);
+            $handler(...$args);
         } elseif (is_string($handler)) {
             [$name, $method] = array_pad(explode('@', $handler, 2), 2, '');
 
             $handler = [new $name(), $method ?: 'dispatch'];
 
             if (is_callable($handler)) {
-                return $handler(...$args);
+                $handler(...$args);
+                return;
             }
         } elseif (is_object($handler)) {
             $handler = [$handler, 'dispatch'];
 
             if (is_callable($handler)) {
-                return $handler(...$args);
+                $handler(...$args);
+                return;
             }
         }
 
-        return 'Command not found.';
+        echo "Command not found.\n";
     }
 
     public function handleError(int $errno, string $msg, string $file = '', int $line = 0): void
